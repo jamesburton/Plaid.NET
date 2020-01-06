@@ -1,12 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using Acklann.Plaid.Interfaces;
+using Newtonsoft.Json;
 
 namespace Acklann.Plaid.Institution
 {
     /// <summary>
     /// Represents a request for plaid's '/institutions/search' endpoints. The '/institutions/search' endpoint to retrieve a complete list of supported institutions that match the query.
     /// </summary>
-    /// <seealso cref="Acklann.Plaid.SerializableContent" />
-    public class SearchRequest : SerializableContent
+    /// <seealso cref="SerializableContent" />
+    public class SearchRequest : SerializableContent, IHasPublicKey
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchRequest"/> class.

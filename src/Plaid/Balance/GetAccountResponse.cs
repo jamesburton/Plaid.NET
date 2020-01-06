@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a response from plaid's '/accounts/get' endpoint.
     /// </summary>
-    /// <seealso cref="Acklann.Plaid.ResponseBase" />
+    /// <seealso cref="ResponseBase" />
     public class GetAccountResponse : ResponseBase
     {
         /// <summary>

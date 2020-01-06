@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using Shouldly;
 
 namespace Acklann.Plaid.MSTest.Tests
@@ -200,6 +201,32 @@ namespace Acklann.Plaid.MSTest.Tests
             result.Income.Streams.Length.ShouldBeGreaterThan(0);
             result.Income.LastYearIncome.ShouldBeGreaterThan(0);
             result.Item.ShouldNotBeNull();
+        }
+
+        [TestMethod]
+        public void CreateAssetReportAsync_should_return_an_asset_report_token()
+        {
+            // Arrange
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.CreateAssetReportRequest("access-sandbox-1cdbd094-a2c3-42a1-a6a0-6f911c20710a")
+            {
+            }.UseDefaults();
+
+            // Act
+            var result = sut.CreateAssetReportAsync(request).Result;
+            bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+            if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+
+            // Assert
+#if DEBUG
+            var requestJson = JsonConvert.SerializeObject(request);
+            var responseJson = result.RawJsonForDebugging;
+#endif
+            result.IsSuccessStatusCode.ShouldBeTrue();
+            result.RequestId.ShouldNotBeNullOrEmpty();
+            result.AssetReportId.ShouldNotBeNullOrEmpty();
+            result.AssetReportToken.ShouldNotBeNullOrEmpty();
+
         }
     }
 }

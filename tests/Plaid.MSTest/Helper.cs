@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Acklann.Plaid.Interfaces;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -25,18 +26,31 @@ namespace Acklann.Plaid.MSTest
 
         public static TRequest UseDefaults<TRequest>(this TRequest request)
         {
-            PropertyInfo[] properties = request.GetType().GetTypeInfo().GetRuntimeProperties().ToArray();
-            setProperty(nameof(Institution.SearchRequest.PublicKey), PublicKey);
-            setProperty(nameof(RequestBase.AccessToken), AccessToken);
-            setProperty(nameof(RequestBase.ClientId), ClientId);
-            setProperty(nameof(RequestBase.Secret), Secret);
-            return request;
+            //PropertyInfo[] properties = request.GetType().GetTypeInfo().GetRuntimeProperties().ToArray();
+            //setProperty(nameof(Institution.SearchRequest.PublicKey), PublicKey);
+            //setProperty(nameof(RequestBase.AccessToken), AccessToken);
+            //setProperty(nameof(RequestBase.ClientId), ClientId);
+            //setProperty(nameof(RequestBase.Secret), Secret);
+            //return request;
 
-            void setProperty(string name, object value)
+            //void setProperty(string name, object value)
+            //{
+            //    PropertyInfo target = properties.FirstOrDefault(p => p.Name == name);
+            //    if (target != null) target.SetValue(request, value);
+            //}
+
+            // NB: Switched to strongly typed alternative via interfaces
+
+            if(request is IHasClientIdAndSecret rcs)
             {
-                PropertyInfo target = properties.FirstOrDefault(p => p.Name == name);
-                if (target != null) target.SetValue(request, value);
+                rcs.ClientId = ClientId;
+                rcs.Secret = Secret;
             }
+            if(request is IHasAccessToken rat)
+                rat.AccessToken = AccessToken;
+            if (request is IHasPublicKey rpk)
+                rpk.PublicKey = PublicKey;
+            return request;
         }
 
         public static string ToJson(this object obj)

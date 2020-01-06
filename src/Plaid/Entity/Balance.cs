@@ -41,6 +41,5 @@ namespace Acklann.Plaid.Entity
         /// <value>currency code.</value>
         [JsonProperty("unofficial_currency_code")]
         public string UnofficialCurrencyCode { get; set; }
-
     }
 }

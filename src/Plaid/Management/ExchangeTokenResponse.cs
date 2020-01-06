@@ -5,7 +5,7 @@ namespace Acklann.Plaid.Management
     /// <summary>
     /// Represents a response from plaid's '/item/public_token/exchange' endpoint. Exchange a Link public_token for an API access_token.
     /// </summary>
-    /// <seealso cref="Acklann.Plaid.ResponseBase" />
+    /// <seealso cref="ResponseBase" />
     public class ExchangeTokenResponse : ResponseBase
     {
         /// <summary>

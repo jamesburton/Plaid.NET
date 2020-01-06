@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a response from plaid's '/item/get' endpoint. The POST /item/get endpoint returns information about the status of an <see cref="Entity.Item"/>.
     /// </summary>
-    /// <seealso cref="Acklann.Plaid.ResponseBase" />
+    /// <seealso cref="ResponseBase" />
     public class GetItemResponse : ResponseBase
     {
         /// <summary>

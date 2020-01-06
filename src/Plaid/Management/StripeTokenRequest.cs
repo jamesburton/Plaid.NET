@@ -8,7 +8,7 @@ namespace Acklann.Plaid.Management
     /// <summary>
     /// Represents a request for plaid's '/processor/stripe/bank_account_token/create' endpoint. Exchange a Link access_token for an Stripe API stripe_bank_account_token and request_id. 
     /// </summary>
-    /// <seealso cref="Acklann.Plaid.SerializableContent" />
+    /// <seealso cref="SerializableContent" />
     public class StripeTokenRequest : SerializableContent
     {
         /// <summary>
@@ -31,7 +31,6 @@ namespace Acklann.Plaid.Management
         /// <value>The secret.</value>
         [JsonProperty("secret")]
         public string Secret { get; set; }
-
 
         /// <summary>
         /// Gets or sets the account id.

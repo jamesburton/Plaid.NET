@@ -4,19 +4,23 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Acklann.Plaid</AssemblyName>
     <RootNamespace>Acklann.Plaid</RootNamespace>
-    <AssemblyVersion>0.0.9</AssemblyVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
     <PackageVersion>0.0.9</PackageVersion>
-    <Authors>Ackara</Authors>
-    <Company>Ackara</Company>
+    <Authors>Ackara + James Burton</Authors>
+    <Company>Ackara + Code-Consultants</Company>
     <PackageTags>plaid banking rest api</PackageTags>
     <Copyright>All rights reserved</Copyright>
-    <PackageProjectUrl>https://github.com/Ackara/Plaid.NET</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/jamesburton/Plaid.NET</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/Ackara/Plaid.NET/blob/master/LICENSE</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <RepositoryUrl>https://github.com/Ackara/Plaid.NET.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/jamesburton/Plaid.NET.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Description>This is a .NET standard port of the [plaid](https://plaid.com/) banking API.</Description>
+    <Description>This is a .NET standard port of the [plaid](https://plaid.com/) banking API.
+This has been modified to include support for assets-reports.</Description>
     <PackageIconUrl>https://github.com/Ackara/Plaid.NET/raw/master/art/icon.png</PackageIconUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.1.0</Version>
+    <PackageReleaseNotes>v1.0.1.0 - Removed incorrect /item/delete calls, and added Asset section to handle Assets product</PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netstandard2.0\Acklann.Plaid.xml</DocumentationFile>

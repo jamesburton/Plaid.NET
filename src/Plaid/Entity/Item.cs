@@ -29,7 +29,7 @@ namespace Acklann.Plaid.Entity
         public string[] BilledProducts { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Entity.Institution"/> identifier.
+        /// Gets or sets the <see cref="Institution"/> identifier.
         /// </summary>
         /// <value>The institution identifier.</value>
         [JsonProperty("institution_id")]

@@ -6,7 +6,7 @@ namespace Acklann.Plaid.Exceptions
     /// <summary>
     /// The exception that is thrown when a response from the Plaid API contains an error.
     /// </summary>
-    /// <seealso cref="System.Exception" />
+    /// <seealso cref="Exception" />
     [Serializable]
     public class PlaidException : Exception
     {

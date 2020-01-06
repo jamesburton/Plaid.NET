@@ -3,6 +3,6 @@
     /// <summary>
     /// Represents a request for plaid's '/accounts/get' endpoint.
     /// </summary>
-    /// <seealso cref="Acklann.Plaid.RequestBase" />
+    /// <seealso cref="RequestBase" />
     public class GetAccountRequest : RequestBase { }
 }
