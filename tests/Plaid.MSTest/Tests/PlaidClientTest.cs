@@ -1,6 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Acklann.Plaid.MSTest.Extensions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Shouldly;
+using System;
+using System.Threading.Tasks;
 
 namespace Acklann.Plaid.MSTest.Tests
 {
@@ -13,9 +16,7 @@ namespace Acklann.Plaid.MSTest.Tests
         {
             // Arrange
             var sut = new PlaidClient(Environment.Sandbox);
-            var request = new Management.GetItemRequest()
-            {
-            }.UseDefaults();
+            var request = new Management.GetItemRequest().UseDefaults();
 
             // Act
             var result = sut.FetchItemAsync(request).Result;
@@ -52,9 +53,7 @@ namespace Acklann.Plaid.MSTest.Tests
         {
             // Arrange
             var sut = new PlaidClient(Environment.Sandbox);
-            var request = new Category.GetCategoriesRequest()
-            {
-            }.UseDefaults();
+            var request = new Category.GetCategoriesRequest().UseDefaults();
 
             // Act
             var result = sut.FetchCategoriesAsync(request).Result;
@@ -83,7 +82,7 @@ namespace Acklann.Plaid.MSTest.Tests
             result.IsSuccessStatusCode.ShouldBeTrue();
             result.RequestId.ShouldNotBeNullOrEmpty();
             result.Institutions.Length.ShouldBeGreaterThanOrEqualTo(1);
-            result.Institutions.ShouldAllBe(i => i.Name.ToLower().Contains(request.Query.ToLower()));
+            result.Institutions.ShouldAllBe(i => i.Name.IndexOf(request.Query, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         [TestMethod]
@@ -144,9 +143,7 @@ namespace Acklann.Plaid.MSTest.Tests
         {
             // Arrange
             var sut = new PlaidClient(Environment.Sandbox);
-            var request = new Auth.GetAccountInfoRequest()
-            {
-            }.UseDefaults();
+            var request = new Auth.GetAccountInfoRequest().UseDefaults();
 
             // Act
             var result = sut.FetchAccountInfoAsync(request).Result;
@@ -164,9 +161,7 @@ namespace Acklann.Plaid.MSTest.Tests
         {
             // Arrange
             var sut = new PlaidClient(Environment.Sandbox);
-            var request = new Identity.GetUserIdentityRequest()
-            {
-            }.UseDefaults();
+            var request = new Identity.GetUserIdentityRequest().UseDefaults();
 
             // Act
             var result = sut.FetchUserIdentityAsync(request).Result;
@@ -186,9 +181,7 @@ namespace Acklann.Plaid.MSTest.Tests
         {
             // Arrange
             var sut = new PlaidClient(Environment.Sandbox);
-            var request = new Income.GetIncomeRequest()
-            {
-            }.UseDefaults();
+            var request = new Income.GetIncomeRequest().UseDefaults();
 
             // Act
             var result = sut.FetchUserIncomeAsync(request).Result;
@@ -204,16 +197,14 @@ namespace Acklann.Plaid.MSTest.Tests
         }
 
         [TestMethod]
-        public void CreateAssetReportAsync_should_return_an_asset_report_token()
+        public async Task CreateAssetReportAsync_should_return_an_asset_report_token()
         {
             // Arrange
             var sut = new PlaidClient(Environment.Sandbox);
-            var request = new Asset.CreateAssetReportRequest("access-sandbox-1cdbd094-a2c3-42a1-a6a0-6f911c20710a")
-            {
-            }.UseDefaults();
+            var request = new Asset.CreateAssetReportRequest("access-sandbox-1cdbd094-a2c3-42a1-a6a0-6f911c20710a").UseDefaults();
 
             // Act
-            var result = sut.CreateAssetReportAsync(request).Result;
+            var result = await sut.CreateAssetReportAsync(request).ConfigureAwait(false);
             bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
             if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
 
@@ -226,7 +217,66 @@ namespace Acklann.Plaid.MSTest.Tests
             result.RequestId.ShouldNotBeNullOrEmpty();
             result.AssetReportId.ShouldNotBeNullOrEmpty();
             result.AssetReportToken.ShouldNotBeNullOrEmpty();
+        }
 
+        [TestMethod]
+        public async Task GetAssetReportAsync_should_return_an_asset_report()
+        {
+            // Arrange
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.GetAssetReportRequest("assets-sandbox-2ba2d788-a321-4b5d-b26e-45e8af3b34c8").UseDefaults();
+
+            // Act
+            var result = await sut.GetAssetReportAsync(request).ConfigureAwait(false);
+            bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+            if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+
+            // Assert 
+            //#if DEBUG
+            //            var requestJson = JsonConvert.SerializeObject(request);
+            //            var responseJson = result.RawJsonForDebugging;
+            //            System.IO.File.WriteAllText(@"ExamplePlaidAssetReportResponse.json", responseJson);
+            //#endif
+            result.IsSuccessStatusCode.ShouldBeTrue();
+            result.RequestId.ShouldNotBeNullOrEmpty();
+            result.Report.ShouldNotBeNull();
+            result.Report.AssetReportId.ShouldNotBeNullOrEmpty();
+            //result.Report.ClientReportId.ShouldNotBeNullOrEmpty(); // NB: This is empty in the sandbox report
+            result.Report.DateGenerated.ShouldBe(DateTime.Parse("2020-01-06 12:00"), TimeSpan.FromHours(12));
+            result.Report.DaysRequested.ShouldBe(730);
+            result.Report.Items.ShouldNotBeNull();
+            result.Report.Items.ShouldNotBeEmpty();
+            //result.Report.Items[0].Accounts[0].DaysAvailable.ShouldBe(730); // NB: Actually only 90 are available in sandbox report
+            //result.Report.Items[0].Accounts[0].HistoricalBalances.Length.ShouldBe(730); // NB: Actually 0 were returned in sandbox report
+        }
+
+        [TestMethod]
+        public async Task GetAssetReportPdfAsync_should_return_a_pdf_stream()
+        {
+            // Arrange
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.GetAssetReportPdfRequest("assets-sandbox-2ba2d788-a321-4b5d-b26e-45e8af3b34c8").UseDefaults();
+
+            // Act
+            using (var result = await sut.GetAssetReportPdfAsync(request).ConfigureAwait(false))
+            {
+                bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+                if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+                long outputSize = 0;
+                if (result.ResponseStream != null) outputSize = await result.ResponseStream.SaveToFile(@"c:\AssetReportExampleFromSandbox.pdf");
+
+                // Assert 
+                //#if DEBUG
+                //            var requestJson = JsonConvert.SerializeObject(request);
+                //            var responseJson = result.RawJsonForDebugging;
+                //            System.IO.File.WriteAllText(@"ExamplePlaidAssetReportResponse.json", responseJson);
+                //#endif
+                result.IsSuccessStatusCode.ShouldBeTrue();
+                result.RequestId.ShouldNotBeNullOrEmpty(); // NB: Binary stream responses
+                result.ResponseStream.ShouldNotBeNull();
+                result.ResponseStream.Length.ShouldBeGreaterThanOrEqualTo(1000);
+                outputSize.ShouldNotBe(0);
+            }
         }
     }
 }

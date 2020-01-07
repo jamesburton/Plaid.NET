@@ -33,7 +33,7 @@ namespace Acklann.Plaid.Demo.Controllers
 
         #region Private Members
 
-        private Middleware.PlaidCredentials _credentials;
+        private readonly Middleware.PlaidCredentials _credentials;
 
         #endregion Private Members
     }

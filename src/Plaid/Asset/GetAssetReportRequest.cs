@@ -5,7 +5,7 @@ namespace Acklann.Plaid.Asset
     /// <summary>
     /// Represents a request for plaid's '/asset_report/get' endpoint. The '/asset_report/get' endpoint allows developers to fetch an existing asset report.
     /// </summary>
-    public class GetAssetReportRequest : RequestBase
+    public class GetAssetReportRequest : RequestBaseTokenless
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GetAssetReportRequest"/> class.

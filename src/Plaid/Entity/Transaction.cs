@@ -123,6 +123,10 @@ namespace Acklann.Plaid.Entity
         [JsonProperty("account_owner")]
         public string AccountOwner { get; set; }
 
+        /// <summary>Gets or sets the original description.</summary>
+        [JsonProperty("original_description")]
+        public string OriginalDescription { get; set; }
+
         /// <summary>
         /// Gets the transaction type.
         /// </summary>

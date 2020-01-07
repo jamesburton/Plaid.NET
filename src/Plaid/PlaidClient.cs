@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -155,7 +156,7 @@ namespace Acklann.Plaid
             : PostAsync<Asset.GetAssetReportResponse>("asset_report/get", request);
 
         // /asset_report/pdf/get
-        public Task<Stream> GetAssetReportPdfAsync(Asset.GetAssetReportPdfRequest request)
+        public Task<StreamResponse> GetAssetReportPdfAsync(Asset.GetAssetReportPdfRequest request)
             => (request == null) ? throw new ArgumentNullException(nameof(request))
             : PostAsyncBinaryResponse("asset_report/pdf/get", request);
 
@@ -311,8 +312,8 @@ namespace Acklann.Plaid
             }.Uri.AbsoluteUri;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "SecurityIntelliSenseCS:MS Security rules violation", Justification = "These requests are all HTTPS, so this is a false-positive")]
-        internal async Task<TResponse> PostAsync<TResponse>(string path, SerializableContent request) where TResponse : ResponseBase
+        internal async Task<TResponse> PostAsync<TResponse>(string path, SerializableContent request)
+            where TResponse : ResponseBase, new()
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
@@ -328,31 +329,49 @@ namespace Acklann.Plaid
                 {
                     json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     Log(json, $"RESPONSE ({response.StatusCode})");
-                    TResponse result = JsonConvert.DeserializeObject<TResponse>(json);
-                    result.StatusCode = response.StatusCode;
-
-                    if (!response.IsSuccessStatusCode)
+                    try
                     {
-                        var error = JObject.Parse(json);
-                        result.Exception = new Exceptions.PlaidException(error["error_message"].Value<string>())
+                        TResponse result = JsonConvert.DeserializeObject<TResponse>(json);
+                        result.StatusCode = response.StatusCode;
+
+                        if (!response.IsSuccessStatusCode)
                         {
-                            HelpLink = "https://plaid.com/docs/api/#errors-overview",
-                            DisplayMessage = error["display_message"].Value<string>(),
-                            ErrorType = error["error_type"].Value<string>(),
-                            ErrorCode = error["error_code"].Value<string>(),
+                            var error = JObject.Parse(json);
+                            result.Exception = new Exceptions.PlaidException(error["error_message"].Value<string>())
+                            {
+                                HelpLink = "https://plaid.com/docs/api/#errors-overview",
+                                DisplayMessage = error["display_message"].Value<string>(),
+                                ErrorType = error["error_type"].Value<string>(),
+                                ErrorCode = error["error_code"].Value<string>(),
+                                Source = url,
+                            };
+                        }
+#if DEBUG
+                        result.RawJsonForDebugging = json;
+#endif
+                        return result;
+                    } catch(JsonSerializationException)
+                    {
+                        var result = new TResponse();
+                        const string serializationErrorMessage = "Error deserializing JSON response";
+                        result.Exception = new Exceptions.PlaidException(serializationErrorMessage)
+                        {
+                            //HelpLink = "https://plaid.com/docs/api/#errors-overview",
+                            DisplayMessage = serializationErrorMessage,
+                            ErrorType = "JsonSerializationException",
+                            ErrorCode = "N/A",
                             Source = url,
                         };
-                    }
 #if DEBUG
-                    result.RawJsonForDebugging = json;
+                        result.RawJsonForDebugging = json;
 #endif
-                    return result;
+                        return result;
+                    }
                 }
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "SecurityIntelliSenseCS:MS Security rules violation", Justification = "We are only using HTTPS urls, so this is a false positive")]
-        internal async Task<Stream> PostAsyncBinaryResponse(string path, SerializableContent request)
+        internal async Task<StreamResponse> PostAsyncBinaryResponse(string path, SerializableContent request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
@@ -364,37 +383,33 @@ namespace Acklann.Plaid
                 string json = request.ToJson();
                 Log(json, $"POST: '{url}'");
 
-                using (HttpResponseMessage response = await client.PostAsync(url, Body(json)).ConfigureAwait(false))
+                //using (HttpResponseMessage response = await client.PostAsync(url, Body(json)).ConfigureAwait(false))
+                // As we are returning the response stream, we need to avoid disposing of the response
+                var response = await client.PostAsync(url, Body(json)).ConfigureAwait(false);
+                var result = new StreamResponse { StatusCode = response.StatusCode };
+                if (!response.IsSuccessStatusCode)
                 {
-//                    json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-//                    Log(json, $"RESPONSE ({response.StatusCode})");
-//                    TResponse result = JsonConvert.DeserializeObject<TResponse>(json);
-//                    result.StatusCode = response.StatusCode;
-
-//                    if (!response.IsSuccessStatusCode)
-//                    {
-//                        var error = JObject.Parse(json);
-//                        result.Exception = new Exceptions.PlaidException(error["error_message"].Value<string>())
-//                        {
-//                            HelpLink = "https://plaid.com/docs/api/#errors-overview",
-//                            DisplayMessage = error["display_message"].Value<string>(),
-//                            ErrorType = error["error_type"].Value<string>(),
-//                            ErrorCode = error["error_code"].Value<string>(),
-//                            Source = url,
-//                        };
-//                    }
-//#if DEBUG
-//                    result.RawJsonForDebugging = json;
-//#endif
-//                    return result;
-
-                    if(!response.IsSuccessStatusCode)
+                    Log($"Failed to fetch binary response, so parsing response as JSON");
+                    var error = JObject.Parse(json);
+                    result.Exception = new Exceptions.PlaidException(error["error_message"].Value<string>())
                     {
-                        Log($"Failed to fetch binary response");
-                        return null;
-                    }
-                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                        HelpLink = "https://plaid.com/docs/api/#errors-overview",
+                        DisplayMessage = error["display_message"].Value<string>(),
+                        ErrorType = error["error_type"].Value<string>(),
+                        ErrorCode = error["error_code"].Value<string>(),
+                        Source = url,
+                    };
+#if DEBUG
+                    result.RawJsonForDebugging = json;
+#endif
+                } else
+                {
+                    // Grab the request id from the "Plaid-Request-ID" response header
+                    result.RequestId = response.Headers.GetValues("Plaid-Request-ID").FirstOrDefault();
+                    // Return the response stream for use elsewhere
+                    result.ResponseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 }
+                return result;
             }
         }
 
