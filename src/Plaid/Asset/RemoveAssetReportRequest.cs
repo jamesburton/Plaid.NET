@@ -6,7 +6,7 @@ namespace Acklann.Plaid.Asset
     /// Represents a request for plaid's '/asset_report/remove' endpoints. The '/asset_report/remove' endpoint allows you to delete an <see cref="Entity.AssetReport"/>. Once deleted, the associated asset_report and any filtered and audit reports generated from it will unavailable.
     /// </summary>
     /// <seealso cref="RequestBase" />
-    public class RemoveAssetReportRequest : RequestBase {
+    public class RemoveAssetReportRequest : RequestBaseTokenless {
         /// <summary>Constructs an instance of RemoveAssetReportRequest. See also <see cref="RequestBase"/>.</summary>
         public RemoveAssetReportRequest() { }
 

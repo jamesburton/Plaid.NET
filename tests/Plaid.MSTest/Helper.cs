@@ -3,8 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace Acklann.Plaid.MSTest
 {

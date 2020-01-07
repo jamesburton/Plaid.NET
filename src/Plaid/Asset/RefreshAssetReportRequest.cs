@@ -5,14 +5,18 @@ namespace Acklann.Plaid.Asset
     /// <summary>
     /// Represents a request for plaid's '/asset_report/refresh' endpoint. The '/asset_report/refresh' endpoint allows developers to copy an asset report with refreshed data (as asset reports are immutable).
     /// </summary>
-    public class RefreshAssetReportRequest : RequestBase
+    public class RefreshAssetReportRequest : RequestBaseTokenless
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RefreshAssetReportRequest"/> class.
-        /// </summary>
-        public RefreshAssetReportRequest()
-        {
-        }
+        /// <summary>Initializes a new instance of the <see cref="RefreshAssetReportRequest"/> class.</summary>
+        public RefreshAssetReportRequest() { }
+
+        /// <summary>Initializes a new instance of the <see cref="RefreshAssetReportRequest"/> class.</summary>
+        /// <param name="assetReportToken">The token for the asset report to base from and refresh.</param>
+        public RefreshAssetReportRequest(string assetReportToken) => AssetReportToken = assetReportToken;
+
+        /// <summary>Gets or sets the asset report token for the asset report to be filtered.</summary>
+        [JsonProperty("asset_report_token")]
+        public string AssetReportToken { get; set; }
 
         /// <summary>Gets or sets the request options.</summary>
         [JsonProperty("options")]

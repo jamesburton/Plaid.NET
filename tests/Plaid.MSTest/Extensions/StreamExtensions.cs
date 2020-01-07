@@ -15,10 +15,10 @@ namespace Acklann.Plaid.MSTest.Extensions
             using (FileStream fs = new FileStream(path, fileMode, fileAccess, fileShare))
             {
                 int read;
-                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
                 {
                     totalRead += read;
-                    await fs.WriteAsync(buffer, 0, read);
+                    await fs.WriteAsync(buffer, 0, read).ConfigureAwait(false);
                 }
             };
             return totalRead;
@@ -34,10 +34,10 @@ namespace Acklann.Plaid.MSTest.Extensions
             long totalRead = 0L;
 
             int read;
-            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
             {
                 totalRead += read;
-                await outputStream.WriteAsync(buffer, 0, read);
+                await outputStream.WriteAsync(buffer, 0, read).ConfigureAwait(false);
             }
 
             return totalRead;

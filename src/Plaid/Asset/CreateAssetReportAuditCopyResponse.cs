@@ -12,6 +12,6 @@ namespace Acklann.Plaid.Asset
         /// Gets or sets the audit-copy token (used to get the audit-copy of the asset report).
         /// </summary>
         [JsonProperty("audit_copy_token")]
-        public int AuditCopyToken { get; set; }
+        public string AuditCopyToken { get; set; }
     }
 }

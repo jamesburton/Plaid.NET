@@ -263,7 +263,7 @@ namespace Acklann.Plaid.MSTest.Tests
                 bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
                 if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
                 long outputSize = 0;
-                if (result.ResponseStream != null) outputSize = await result.ResponseStream.SaveToFile(@"c:\AssetReportExampleFromSandbox.pdf");
+                if (result.ResponseStream != null) outputSize = await result.ResponseStream.SaveToFile(@"c:\AssetReportExampleFromSandbox.pdf").ConfigureAwait(false);
 
                 // Assert 
                 //#if DEBUG
@@ -277,6 +277,132 @@ namespace Acklann.Plaid.MSTest.Tests
                 result.ResponseStream.Length.ShouldBeGreaterThanOrEqualTo(1000);
                 outputSize.ShouldNotBe(0);
             }
+        }
+
+        [TestMethod]
+        public async Task RefreshAssetReportAsync_should_return_an_new_asset_report_id()
+        {
+            // Arrange
+            const string sourceAssetToken = "assets-sandbox-2ba2d788-a321-4b5d-b26e-45e8af3b34c8";
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.RefreshAssetReportRequest(sourceAssetToken).UseDefaults();
+
+            // Act
+            var result = await sut.RefreshAssetReportAsync(request).ConfigureAwait(false);
+            bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+            if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+
+            // Assert 
+            //#if DEBUG
+            //            var requestJson = JsonConvert.SerializeObject(request);
+            //            var responseJson = result.RawJsonForDebugging;
+            //            System.IO.File.WriteAllText(@"ExamplePlaidAssetReportResponse.json", responseJson);
+            //#endif
+            result.IsSuccessStatusCode.ShouldBeTrue();
+            result.RequestId.ShouldNotBeNullOrEmpty();
+            result.AssetReportId.ShouldNotBeNullOrEmpty();
+            result.AssetReportToken.ShouldNotBeNullOrEmpty();
+            result.AssetReportToken.ShouldNotBeSameAs(sourceAssetToken);
+        }
+
+        [TestMethod]
+        public async Task FilterAssetReportAsync_should_return_an_new_asset_report_id()
+        {
+            // Arrange
+            const string sourceAssetToken = "assets-sandbox-2ba2d788-a321-4b5d-b26e-45e8af3b34c8"; // This is the asset-report token for the source to be filtered to create the new report
+            const string accountIdToFilter = "GDP5wlKdWvux4WgegDe5f3L4drkJeac1B3oa5"; // This is the account id to exclude from the report
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.FilterAssetReportRequest(sourceAssetToken, accountIdToFilter).UseDefaults();
+
+            // Act
+            var result = await sut.FilterAssetReportAsync(request).ConfigureAwait(false);
+            bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+            if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+
+            // Assert 
+            //#if DEBUG
+            //            var requestJson = JsonConvert.SerializeObject(request);
+            //            var responseJson = result.RawJsonForDebugging;
+            //            System.IO.File.WriteAllText(@"ExamplePlaidAssetReportResponse.json", responseJson);
+            //#endif
+            result.IsSuccessStatusCode.ShouldBeTrue();
+            result.RequestId.ShouldNotBeNullOrEmpty();
+            result.AssetReportId.ShouldNotBeNullOrEmpty();
+            result.AssetReportToken.ShouldNotBeNullOrEmpty();
+            result.AssetReportToken.ShouldNotBeSameAs(sourceAssetToken);
+        }
+
+        [TestMethod]
+        public async Task RemoveAssetReportAsync_should_return_confirmation()
+        {
+            // Arrange
+            const string sourceAssetToken = "assets-sandbox-32781293-02b0-4594-9567-1963078978de"; // This is the asset-report token for the asset-report to be removed.
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.RemoveAssetReportRequest(sourceAssetToken).UseDefaults();
+
+            // Act
+            var result = await sut.RemoveAssetReportAsync(request).ConfigureAwait(false);
+            bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+            if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+
+            // Assert 
+            //#if DEBUG
+            //            var requestJson = JsonConvert.SerializeObject(request);
+            //            var responseJson = result.RawJsonForDebugging;
+            //            System.IO.File.WriteAllText(@"ExamplePlaidAssetReportResponse.json", responseJson);
+            //#endif
+            result.IsSuccessStatusCode.ShouldBeTrue();
+            result.RequestId.ShouldNotBeNullOrEmpty();
+            result.Removed.ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public async Task CreateAssetReportAuditCopyAsync_should_return_an_new_asset_report_audit_copy()
+        {
+            // Arrange
+            const string sourceAssetToken = "assets-sandbox-2ba2d788-a321-4b5d-b26e-45e8af3b34c8"; // This is the asset-report token for the source to be copied for the auditor.
+            const string auditorId = "fannie_mae"; // This is the auditor's id to identify who can access this audit-copy.
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.CreateAssetReportAuditCopyRequest(sourceAssetToken, auditorId).UseDefaults();
+
+            // Act
+            var result = await sut.CreateAssetReportAuditCopyAsync(request).ConfigureAwait(false);
+            bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+            if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+
+            // Assert 
+            //#if DEBUG
+            //            var requestJson = JsonConvert.SerializeObject(request);
+            //            var responseJson = result.RawJsonForDebugging;
+            //            System.IO.File.WriteAllText(@"ExamplePlaidAssetReportResponse.json", responseJson);
+            //#endif
+            result.IsSuccessStatusCode.ShouldBeTrue();
+            result.RequestId.ShouldNotBeNullOrEmpty();
+            result.AuditCopyToken.ShouldNotBeNullOrEmpty();
+        }
+
+        [TestMethod]
+        public async Task RemoveAssetReportAuditCopyAsync_should_return_confirmation()
+        {
+            // Arrange
+            const string sourceAuditCopyToken = "a-sandbox-wkhidfibqbhbbeazvopvlv4ptu"; // This is the audit-copy token for the asset-report-audit-copy to be removed.
+            var sut = new PlaidClient(Environment.Sandbox);
+            var request = new Asset.RemoveAssetReportAuditCopyRequest(sourceAuditCopyToken).UseDefaults();
+
+            // Act
+            var result = await sut.RemoveAssetReportAuditCopyAsync(request).ConfigureAwait(false);
+            bool publicKeyDontHaveAccess = result.Exception?.ErrorCode == "INVALID_PRODUCT";
+            if (publicKeyDontHaveAccess) Assert.Inconclusive(Helper.your_public_key_do_not_have_access_contact_plaid);
+
+            // Assert 
+            //#if DEBUG
+            //            var requestJson = JsonConvert.SerializeObject(request);
+            //            var responseJson = result.RawJsonForDebugging;
+            //            System.IO.File.WriteAllText(@"ExamplePlaidAssetReportResponse.json", responseJson);
+            //#endif
+            result.IsSuccessStatusCode.ShouldBeTrue();
+            result.RequestId.ShouldNotBeNullOrEmpty();
+            result.Removed.ShouldBeTrue();
         }
     }
 }
